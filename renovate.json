@@ -27,6 +27,18 @@
       "datasourceTemplate": "deb"
     },
     {
+      "description": "updates the deb package versions in the metadata.hcl files of extensions not distributed by PGDG",
+      "customType": "regex",
+      "managerFilePatterns": [
+        "**/*.hcl"
+      ],
+      "matchStrings": [
+        "\\/\\/\\s*renovate:\\s*registryUrl=(?<registryUrl>\\S+)\\s+depName=(?<depName>\\S+)(?: extractVersion=(?<extractVersion>[^\\s]+?))?\\s*(sql|package)\\s*=\\s*\"(?<currentValue>.*)\""
+      ],
+      "registryUrlTemplate": "{{{registryUrl}}}",
+      "datasourceTemplate": "deb"
+    },
+    {
       "description": "updates the container image versions in the README.md files",
       "customType": "regex",
       "managerFilePatterns": [
@@ -36,6 +48,19 @@
         "#\\s*renovate:\\s*?(suite=(?<suite>.*?))?\\s*depName=(?<depName>.*?)?\\s*reference: ghcr.io\\/cloudnative-pg\\/[A-Za-z0-9_-]+:(?<currentValue>([0-9]\\.?)+)"
       ],
       "registryUrlTemplate": "https://download.postgresql.org/pub/repos/apt?suite={{#if suite}}{{suite}}{{else}}stable{{/if}}&components=main&binaryArch=amd64",
+      "datasourceTemplate": "deb",
+      "extractVersionTemplate": "^(?<version>[^-+]+)"
+    },
+    {
+      "description": "updates the container image versions in the README.md files of extensions not distributed by PGDG",
+      "customType": "regex",
+      "managerFilePatterns": [
+        "**/README.md"
+      ],
+      "matchStrings": [
+        "#\\s*renovate:\\s*registryUrl=(?<registryUrl>\\S+)\\s+depName=(?<depName>\\S+)\\s*reference: ghcr.io\\/cloudnative-pg\\/[A-Za-z0-9_-]+:(?<currentValue>([0-9]\\.?)+)"
+      ],
+      "registryUrlTemplate": "{{{registryUrl}}}",
       "datasourceTemplate": "deb",
       "extractVersionTemplate": "^(?<version>[^-+]+)"
     },

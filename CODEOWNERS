@@ -10,3 +10,7 @@
 /timescaledb-oss/ @cloudnative-pg/postgres-extensions-containers-owners @shusaan
 /wal2json/ @cloudnative-pg/postgres-extensions-containers-owners @solidDoWant
 /pg-ivm/ @cloudnative-pg/postgres-extensions-containers-owners @shusaan
+
+# Fork-only extension: not present upstream, so it is not covered by the
+# generated policy above.
+/citus/ @maarlab-rethinking/engineering
