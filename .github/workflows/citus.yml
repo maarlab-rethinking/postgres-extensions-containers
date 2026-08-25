@@ -1,0 +1,43 @@
+name: Build, test and publish Citus
+
+# Fork-only workflow. `bake.yml` is kept disabled in this fork: its `_shared`
+# path filter fans out to every extension, so any upstream sync would rebuild
+# and republish the eight extensions this fork consumes from upstream instead of
+# owning. A disabled workflow cannot be dispatched either, hence this dedicated
+# caller for the only extension the fork builds. See FORK.md.
+
+# Testing images are built for a pull request, not for every branch push: a
+# `-testing` tag is a review artefact, and building on push published one for
+# any throwaway branch. `pull_request` also builds `refs/pull/N/merge`, so what
+# gets tested is the merge result rather than the branch in isolation.
+#
+# The push trigger is narrowed to `main`, which is what `copytoproduction` in
+# `bake_targets.yml` gates on: production tags follow a merge, never a review.
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'citus/**'
+      - '.github/workflows/citus.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'citus/**'
+      - '.github/workflows/citus.yml'
+
+permissions: {}
+
+jobs:
+  Bake:
+    name: Bake
+    permissions:
+      packages: write
+      contents: read
+      id-token: write
+      security-events: write
+    uses: ./.github/workflows/bake_targets.yml
+    with:
+      extension_name: citus
+    secrets:
+      SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
