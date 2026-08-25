@@ -1,0 +1,44 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: extension-installed
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: data-test
+        env:
+          # Clear the image-baked PGSSLROOTCERT=system so libpq doesn't
+          # try to verify the CNPG self-signed CA against the OS trust store.
+          - name: PGSSLROOTCERT
+          - name: EXT_VERSION
+            value: ($values.version)
+          - name: DB_URI
+            valueFrom:
+              secretKeyRef:
+                name: (join('-', [$values.name, 'app']))
+                key: uri
+        # renovate: datasource=docker depName=alpine/psql versioning=docker
+        image: alpine/psql:18.6@sha256:6467c8eef6468296b45613cfc31d4b4524d77cdc9cbcf4608fe5a89ebddd83c7
+        command: ['sh', '-c']
+        args:
+         - |
+           set -e
+           DB_URI=$(echo $DB_URI | sed "s|/\*|/|")
+           test "$(psql "$DB_URI" -tAc "SELECT EXISTS (SELECT FROM pg_catalog.pg_extension WHERE extname = 'citus' AND extversion = '${EXT_VERSION}')" -q)" = "t"
+           test "$(psql "$DB_URI" -tAc "SELECT EXISTS (SELECT FROM pg_catalog.pg_extension WHERE extname = 'citus_columnar' AND extversion = '${EXT_VERSION}')" -q)" = "t"
+           # Citus is only functional when loaded via shared_preload_libraries
+           psql "$DB_URI" -tAc "SELECT citus_version()" -q
+           # A distributed table is the most basic Citus functionality
+           psql "$DB_URI" -q -c "DROP TABLE IF EXISTS citus_smoke_test"
+           psql "$DB_URI" -q -c "CREATE TABLE citus_smoke_test (id bigint PRIMARY KEY, payload text)"
+           psql "$DB_URI" -tAc "SELECT create_distributed_table('citus_smoke_test', 'id')" -q
+           psql "$DB_URI" -q -c "INSERT INTO citus_smoke_test SELECT g, 'payload-' || g FROM generate_series(1, 100) g"
+           test "$(psql "$DB_URI" -tAc "SELECT count(*) FROM citus_smoke_test" -q)" = "100"
+           test "$(psql "$DB_URI" -tAc "SELECT count(*) FROM pg_catalog.pg_dist_partition WHERE logicalrelid = 'citus_smoke_test'::regclass" -q)" = "1"
+           # The columnar access method is provided by citus_columnar
+           psql "$DB_URI" -q -c "DROP TABLE IF EXISTS columnar_smoke_test"
+           psql "$DB_URI" -q -c "CREATE TABLE columnar_smoke_test (id int) USING columnar"
+           psql "$DB_URI" -q -c "INSERT INTO columnar_smoke_test SELECT generate_series(1, 100)"
+           test "$(psql "$DB_URI" -tAc "SELECT count(*) FROM columnar_smoke_test" -q)" = "100"

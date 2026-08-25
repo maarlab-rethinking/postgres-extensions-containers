@@ -36,6 +36,7 @@ from a trusted, auditable repository
 
 | Extension | Description | Project URL | Maintained by |
 | :--- | :--- | :--- | :--- |
+| **[Citus](citus)** | Distributed PostgreSQL: sharding, parallel queries and columnar storage | [citusdata.com](https://www.citusdata.com/) | @maarlab-rethinking |
 | **[pgAudit](pgaudit)** | PostgreSQL audit extension | [github.com/pgaudit/pgaudit](https://github.com/pgaudit/pgaudit) | CNPG maintainers |
 | **[pg_crash](pg-crash)** | **Disruptive** fault injection and chaos engineering extension | [github.com/cybertec-postgresql/pg_crash](https://github.com/cybertec-postgresql/pg_crash) | CNPG maintainers |
 | **[pg_ivm](pg-ivm)** | Incremental View Maintenance for PostgreSQL | [github.com/sraoss/pg_ivm](https://github.com/sraoss/pg_ivm) | @shusaan |
@@ -50,6 +51,14 @@ from a trusted, auditable repository
 > They predate this policy; the maintainers are filing a CNCF license exception
 > for them. They are not a precedent for accepting further non-Allowlisted
 > extensions.
+
+> [!IMPORTANT]
+> **Citus is specific to this fork and is not proposed upstream.** It is
+> licensed under the AGPL-3.0, which is not on the CNCF Allowlist, and the note
+> above is explicit that non-Allowlisted licences are not a precedent. It is
+> also the only extension here whose packages come from outside PGDG (the Citus
+> Data apt repository) and the only `amd64`-only image, since no `arm64`
+> packages are published upstream. See [`citus/README.md`](citus/README.md).
 
 Extensions are provided only for the OS versions already built by the
 [`cloudnative-pg/postgres-containers`](https://github.com/cloudnative-pg/postgres-containers) project,
