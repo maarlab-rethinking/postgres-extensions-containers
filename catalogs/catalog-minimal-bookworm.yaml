@@ -1,0 +1,61 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: ClusterImageCatalog
+metadata:
+  name: postgresql-minimal-bookworm-maarlab-rethinking
+  labels:
+    images.cnpg.io/date: "20260831"
+    images.cnpg.io/family: postgresql
+    images.cnpg.io/os: bookworm
+    images.cnpg.io/publisher: maarlab-rethinking
+    images.cnpg.io/type: minimal
+spec:
+  images:
+    - major: 13
+      image: ghcr.io/cloudnative-pg/postgresql:13.22-202511100817-minimal-bookworm@sha256:02e8ffc71aec2768ca177711278d3c0e6ceb5403df5fa6d3780cd590332e3a5d
+    - major: 14
+      image: ghcr.io/cloudnative-pg/postgresql:14.24-202608310817-minimal-bookworm@sha256:8fa599f79770a819c7e07e3aa39e0b155a897431c8c972de28eed7f187ed9e4a
+    - major: 15
+      image: ghcr.io/cloudnative-pg/postgresql:15.19-202608310817-minimal-bookworm@sha256:0b9c2a4b8aec5aad102950c7826a6a8e6e547eb5d83aafdb8cccb05c43c3b8e0
+    - major: 16
+      image: ghcr.io/cloudnative-pg/postgresql:16.15-202608310817-minimal-bookworm@sha256:70c78c2a5451e8e59d1557f5ddd90c4ffff671724935571b8c68f41149453233
+    - major: 17
+      image: ghcr.io/cloudnative-pg/postgresql:17.11-202608310816-minimal-bookworm@sha256:fc1ee3311862d970d9a1a62d9c85e821134bde2536e4323af1e97d794ca93dd5
+    - major: 18
+      image: ghcr.io/cloudnative-pg/postgresql:18.6-202608310817-minimal-bookworm@sha256:37a14bea4831bb284f10cfbdd5d965b5447d42ce8c94111823ce489e12bd089f
+      extensions:
+        - name: citus
+          image:
+            reference: ghcr.io/maarlab-rethinking/citus:14.2.0-18-bookworm@sha256:edec624c1561a50733929a363fc3235ce9fd2b2a67d4f8b2674ee68f2b155180
+          ld_library_path:
+            - system
+        - name: pg-crash
+          image:
+            reference: ghcr.io/cloudnative-pg/pg-crash:0.3-202609081054-18-bookworm@sha256:8e235d4a5eac38435c4880cd78777ef0c44dfa11e43e0b2ca734cf28f45dde1a
+        - name: pg-ivm
+          image:
+            reference: ghcr.io/cloudnative-pg/pg-ivm:1.15-202609110313-18-bookworm@sha256:46a74d519747d7efa54e85c10ae5a2b0f74d68f36449cefd0903474cc7864dc3
+        - name: pgaudit
+          image:
+            reference: ghcr.io/cloudnative-pg/pgaudit:18.0-202609081054-18-bookworm@sha256:469549b90dbdeb1ea7f3298e5ebb10a59642f193b8143a851e1bf0528324d48e
+        - name: pgrouting
+          image:
+            reference: ghcr.io/cloudnative-pg/pgrouting:4.0.1-202609081055-18-bookworm@sha256:473dd8b3c5d431be43ada392336aed8cf5f7b4b3c65c16891ac30ff305a57859
+        - name: pgvector
+          image:
+            reference: ghcr.io/cloudnative-pg/pgvector:0.8.6-202609081054-18-bookworm@sha256:38abbccdac9a65f584300b0e1917262cc2c7451ec2da9e6647d56a86b30503c2
+        - name: postgis
+          image:
+            reference: ghcr.io/cloudnative-pg/postgis-extension:3.6.4-202609081054-18-bookworm@sha256:b91860a530d479ef145e932386db0d31110e0d8a20829d7205a40eaa261649dc
+          ld_library_path:
+            - system
+          env:
+            - name: GDAL_DATA
+              value: ${image_root}/share/gdal
+            - name: PROJ_DATA
+              value: ${image_root}/share/proj
+        - name: timescaledb-oss
+          image:
+            reference: ghcr.io/cloudnative-pg/timescaledb-oss:2.30.0-202609110601-18-bookworm@sha256:dfb8bc626a8a78c2bb7294cf40a8e5443f2bba9680ff8ee6e5af94798b57fc3f
+        - name: wal2json
+          image:
+            reference: ghcr.io/cloudnative-pg/wal2json:2.6-202609081054-18-bookworm@sha256:20d4da13124ff95e9c2c2cfa4859b0fcabd8552ec4b0d8bc6bd2396726e67619
