@@ -59,6 +59,8 @@ from a trusted, auditable repository
 > also the only extension here whose packages come from outside PGDG (the Citus
 > Data apt repository) and the only `amd64`-only image, since no `arm64`
 > packages are published upstream. See [`citus/README.md`](citus/README.md).
+> A `ClusterImageCatalog` carrying it alongside the upstream extensions is
+> published in [`catalogs/`](catalogs).
 
 Extensions are provided only for the OS versions already built by the
 [`cloudnative-pg/postgres-containers`](https://github.com/cloudnative-pg/postgres-containers) project,

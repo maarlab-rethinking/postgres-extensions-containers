@@ -11,6 +11,9 @@
 # Usage:
 #   hack/compose-extension-catalog.sh <distro> <citus-image-ref> [pg-major]
 #
+# Environment:
+#   CATALOG_OWNER   GitHub owner publishing the result (default maarlab-rethinking)
+#
 # Example:
 #   hack/compose-extension-catalog.sh trixie \
 #     ghcr.io/maarlab-rethinking/citus:14.2.0-202608211200-18-trixie@sha256:abc... \
@@ -20,6 +23,7 @@ set -euo pipefail
 DISTRO="${1:?usage: $0 <distro> <citus-image-ref> [pg-major]}"
 CITUS_IMAGE="${2:?usage: $0 <distro> <citus-image-ref> [pg-major]}"
 PG_MAJOR="${3:-18}"
+OWNER="${CATALOG_OWNER:-maarlab-rethinking}"
 
 UPSTREAM_CATALOG="https://raw.githubusercontent.com/cloudnative-pg/artifacts/main/image-catalogs-extensions/catalog-minimal-${DISTRO}.yaml"
 
@@ -31,6 +35,6 @@ curl -fsSL "$UPSTREAM_CATALOG" | yq eval "
       \"ld_library_path\": [\"system\"]
     }]
   | (.spec.images[] | select(.major == ${PG_MAJOR}) | .extensions) |= sort_by(.name)
-  | .metadata.name = \"postgresql-minimal-${DISTRO}-maarlab\"
-  | .metadata.labels.\"images.cnpg.io/publisher\" = \"maarlab-rethinking\"
+  | .metadata.name = \"postgresql-minimal-${DISTRO}-${OWNER}\"
+  | .metadata.labels.\"images.cnpg.io/publisher\" = \"${OWNER}\"
 " -

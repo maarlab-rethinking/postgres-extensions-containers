@@ -19,7 +19,8 @@ Most upstream commits touch the shared surface — `Taskfile.yml`,
 fork edits turns into a recurring merge conflict, so the rule is:
 
 > Changes live in `citus/`, plus files upstream does not have (`FORK.md`,
-> `hack/`, `.github/workflows/citus.yml`).
+> `hack/`, `catalogs/`, `.github/workflows/citus.yml`,
+> `.github/workflows/publish-catalogs.yml`).
 
 Beyond those, the fork only adds: a row and a note in `README.md`, a `CODEOWNERS`
 entry, and the Renovate managers for apt repositories outside PGDG.
@@ -147,21 +148,50 @@ task e2e:test:full TARGET=citus
 
 ## Image catalogs
 
-Upstream publishes a `ClusterImageCatalog` per distribution in
+A `ClusterImageCatalog` maps a PostgreSQL major to an image and, since
+CloudNativePG 1.29, to the extension images that go with it. Upstream publishes
+one per distribution in
 [`cloudnative-pg/artifacts/image-catalogs-extensions`](https://github.com/cloudnative-pg/artifacts/tree/main/image-catalogs-extensions),
-listing every upstream extension by digest and refreshed weekly. Rather than
-running `update-catalogs` here, this fork composes on top of it:
+refreshed weekly by its `update-catalogs.yml`.
+
+That catalog lists the nine extensions upstream builds, and cannot list Citus.
+Anyone who reaches for a catalog — the way CloudNativePG documents — therefore
+cannot consume this fork at all without abandoning catalogs entirely. Closing
+that gap is what [`catalogs/`](catalogs) is for: upstream's catalog with the
+Citus entry appended, published here.
+
+The relationship with `cloudnative-pg/artifacts` stays **read-only**. Its
+catalogs are fetched over HTTPS and never written to, which is why
+`update-catalogs.yml` is disabled here rather than adapted: it checks out that
+repository with a write token. Forking it would buy nothing — the artifact
+needs a stable URL, and this repository already is one.
+
+Two fork-owned scripts do the work, and both are usable by hand:
 
 ```sh
-hack/compose-extension-catalog.sh trixie \
-  ghcr.io/maarlab-rethinking/citus:14.2.0-<timestamp>-18-trixie@sha256:<digest> \
-  > catalog-extensions-trixie.yaml
+# Resolve the published image for a distribution, pinned by digest.
+hack/resolve-citus-image.sh trixie
+# ghcr.io/maarlab-rethinking/citus:14.2.0-18-trixie@sha256:7de5b522...
+
+# Append it to upstream's catalog.
+hack/compose-extension-catalog.sh trixie "$(hack/resolve-citus-image.sh trixie)"
 ```
 
-The script appends the Citus entry — including the `ld_library_path` it needs
-for the bundled `libcurl` — to the PostgreSQL 18 image, renames the catalog and
-relabels the publisher. It matches on `major` rather than on a list index, so
-it keeps working when upstream adds or retires a PostgreSQL major.
+`compose-extension-catalog.sh` matches on `major` rather than on a list index,
+so it survives upstream adding or retiring a PostgreSQL major, and it renames
+the catalog and relabels the publisher so both can coexist in a cluster.
+`resolve-citus-image.sh` reads the tag from `docker buildx bake --print`
+instead of assembling it, so the version comes from `citus/metadata.hcl`
+through the same parsing the build uses — there is no second copy of the rules
+to keep in step when Citus is bumped.
+
+`.github/workflows/publish-catalogs.yml` runs the pair weekly, and again after
+a Citus image lands on `main`. It signs each catalog with a keyless Sigstore
+bundle, as upstream does, and **opens a pull request** instead of committing:
+`main` requires one, and these are digest bumps of images built elsewhere.
+Signing bundles are regenerated on every run even when the catalog is
+byte-identical, so the decision to publish looks at the YAML alone — plus the
+case of a bundle that does not exist yet.
 
 ## Syncing with upstream
 

@@ -36,6 +36,11 @@ affect how you consume the image:
 
 ## Usage
 
+The examples below name the image directly, which is the form that keeps
+upgrades under your control. If you would rather reference a catalog and let
+CloudNativePG resolve the images, [`../catalogs`](../catalogs) publishes one
+with this image already in it.
+
 ### 1. Add the Citus extension image to your Cluster
 
 Define the `citus` extension under the `postgresql.extensions` section of your
