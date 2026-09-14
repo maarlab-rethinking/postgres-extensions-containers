@@ -18,12 +18,18 @@ on:
   pull_request:
     paths:
       - 'citus/**'
+      # Prose changes nothing about the image. Negations are order-sensitive:
+      # this one only subtracts from the pattern above it.
+      - '!citus/**.md'
       - '.github/workflows/citus.yml'
   push:
     branches:
       - main
     paths:
       - 'citus/**'
+      # Prose changes nothing about the image. Negations are order-sensitive:
+      # this one only subtracts from the pattern above it.
+      - '!citus/**.md'
       - '.github/workflows/citus.yml'
 
 permissions: {}
