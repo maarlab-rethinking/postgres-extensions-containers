@@ -107,10 +107,26 @@ multi-arch, push them to `ghcr.io/<owner>/<ext>-testing`, sign them, scan them,
 smoke-test each against three CloudNativePG releases, and then
 `copytoproduction` would promote all of them, because the ref is `main`.
 
-`update-catalogs.yml` and `update_os_libraries.yml` are cron-triggered, and
-GitHub disables scheduled workflows in forks by default, so they are already
-inert. Disabling them explicitly also blocks the `repository_dispatch` path that
-`bake.yml` uses to reach `update-catalogs` after a build on `main`.
+Step 3 is not optional for the two cron-triggered workflows. A fork starts with
+its schedules dormant, but that is a consequence of Actions being off, not a
+standing exemption: once Actions is enabled the crons resume, and
+`update-catalogs.yml` then runs every Monday and fails at the
+`cloudnative-pg/artifacts` checkout. `gh workflow list` reporting
+`disabled_fork` describes the moment, not a setting — only `disabled_manually`
+survives. Disabling `update-catalogs.yml` also blocks the `repository_dispatch`
+path that `bake.yml` uses to reach it after a build on `main`.
+
+A workflow already sitting in `disabled_fork` rejects the disable outright —
+`HTTP 403: Unable to disable a workflow that is not active` — so reaching the
+durable state means arming it for a moment first:
+
+```sh
+gh workflow enable  -R "$REPO" update_os_libraries.yml
+gh workflow disable -R "$REPO" update_os_libraries.yml
+```
+
+Do it away from the workflow's cron (`0 3 * * *` for this one) and the window
+costs nothing.
 
 > [!NOTE]
 > Neither can write to upstream today, because the fork has no `REPO_GHA_PAT`
