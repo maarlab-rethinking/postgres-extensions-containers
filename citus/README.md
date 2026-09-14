@@ -22,7 +22,10 @@ affect how you consume the image:
 - **`shared_preload_libraries` is mandatory.** Citus refuses to work unless it
   is preloaded; `CREATE EXTENSION citus` fails otherwise.
 - **`amd64` only.** Citus Data publishes no `arm64` packages, so this image is
-  single-architecture and cannot be used on `arm64` nodes.
+  single-architecture and cannot be used on `arm64` nodes. Third parties do
+  build Citus for `arm64` — Pigsty is one — but those packages are outside the
+  chain of trust this image relies on: the Citus Data apt repository and the
+  key in [`citusdata-community.asc`](citusdata-community.asc).
 - **Single-node Citus.** A CloudNativePG `Cluster` is one primary with
   replicas, not a coordinator plus workers. The image gives you
   [Citus on a single node](https://docs.citusdata.com/en/stable/get_started/single_node.html):
