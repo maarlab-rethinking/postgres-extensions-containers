@@ -39,15 +39,15 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8 # v4
+        uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4
         with:
           platforms: 'linux/arm64'
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
 
       - name: Build and push
-        uses: docker/bake-action@d3418bd7d0e9324001bca92fa8ba175ea7e6dc9b # v7
+        uses: docker/bake-action@018cb6412ab401ebaa809aa5f85966b74628600f # v7
         id: build
         env:
           BUILDX_METADATA_PROVENANCE: disabled
@@ -81,7 +81,7 @@ jobs:
 
   security:
     name: Security checks
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
       packages: read
@@ -109,7 +109,7 @@ jobs:
 
   generate-smoke-test-matrix:
     name: Generate matrix for smoke tests
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions: {}
     outputs:
       versions: ${{ steps.versions.outputs.versions }}
@@ -128,7 +128,7 @@ jobs:
 
   smoke-test:
     name: Smoke test
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
       packages: read
@@ -152,7 +152,7 @@ jobs:
       - name: Install Dagger
         env:
           # renovate: datasource=github-tags depName=dagger/dagger versioning=semver
-          DAGGER_VERSION: 0.21.8
+          DAGGER_VERSION: 0.21.10
         run: |
           curl -L https://dl.dagger.io/dagger/install.sh | BIN_DIR=$HOME/.local/bin sh
 
@@ -181,7 +181,7 @@ jobs:
   copytoproduction:
     name: Copy images to production
     if: ${{ github.ref == 'refs/heads/main' }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     needs:
       - testbuild
       - security
