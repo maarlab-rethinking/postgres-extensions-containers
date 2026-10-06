@@ -20,7 +20,8 @@ fork edits turns into a recurring merge conflict, so the rule is:
 
 > Changes live in `citus/`, plus files upstream does not have (`FORK.md`,
 > `hack/`, `catalogs/`, `.github/workflows/citus.yml`,
-> `.github/workflows/publish-catalogs.yml`).
+> `.github/workflows/publish-catalogs.yml`,
+> `.github/workflows/registry-clean-citus.yml`).
 
 Beyond those, the fork only adds: a row and a note in `README.md`, a `CODEOWNERS`
 entry, and the Renovate managers for apt repositories outside PGDG.
@@ -97,9 +98,12 @@ gh workflow disable -R "$REPO" update-catalogs.yml
 gh workflow disable -R "$REPO" update_os_libraries.yml
 #    registry-clean.yml deletes the `<ext>-testing` images older than a week,
 #    for every extension in the repository. Only `citus-testing` exists in this
-#    fork's registry, so nine of the ten names it computes are packages that
-#    were never published here. Cleaning up after Citus is worth doing, but as
-#    a fork-owned workflow naming the one image it owns.
+#    fork's registry, so eight of the nine names it computes are packages that
+#    were never published here, and the retention action panics on the first
+#    name it cannot find — "Failed to fetch packages: missing field `id`",
+#    GitHub's 404 body deserialised as a package — instead of skipping it, so
+#    it never reaches citus-testing. `registry-clean-citus.yml` does the same
+#    job for the one image this fork publishes.
 gh workflow disable -R "$REPO" registry-clean.yml
 
 # 4. Only now push the Citus work. citus.yml builds it for a pull request

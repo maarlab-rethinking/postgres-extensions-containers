@@ -1,0 +1,33 @@
+name: Clean Citus testing images
+
+# Fork-only. Upstream's `registry-clean.yml` is kept disabled here: it derives
+# its target list from every extension directory, and nine of the ten names it
+# computes were never published to this registry. This is the same job for the
+# one image the fork owns. See FORK.md.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * *"
+
+permissions: {}
+
+jobs:
+  clean-ghcr:
+    name: Delete old testing container images
+    runs-on: ubuntu-24.04
+    permissions:
+      packages: write
+    steps:
+      - name: Delete '-testing' Citus images
+        uses: snok/container-retention-policy@d3bdcf5ce9b05f685154e4a16c39233b245e3d53 # v3.1.0
+        with:
+          # `image_name` from citus/metadata.hcl, with the suffix
+          # docker-bake.hcl appends while `environment` is `testing`, its
+          # default. Named in full on purpose: the production package is
+          # `citus`, and nothing here may reach it.
+          image-names: citus-testing
+          cut-off: 1w
+          keep-n-most-recent: 1
+          account: ${{ github.repository_owner }}
+          token: ${{ secrets.GITHUB_TOKEN }}
