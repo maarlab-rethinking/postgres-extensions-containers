@@ -95,6 +95,12 @@ gh workflow disable -R "$REPO" update-catalogs.yml
 #    carries the Citus major.minor (postgresql-18-citus-14.2) and lives outside
 #    PGDG, which the maintenance tooling cannot express.
 gh workflow disable -R "$REPO" update_os_libraries.yml
+#    registry-clean.yml deletes the `<ext>-testing` images older than a week,
+#    for every extension in the repository. Only `citus-testing` exists in this
+#    fork's registry, so nine of the ten names it computes are packages that
+#    were never published here. Cleaning up after Citus is worth doing, but as
+#    a fork-owned workflow naming the one image it owns.
+gh workflow disable -R "$REPO" registry-clean.yml
 
 # 4. Only now push the Citus work. citus.yml builds it for a pull request
 #    touching citus/, for a merge to main, or on demand:
