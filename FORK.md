@@ -6,7 +6,7 @@ maintained by [@maarlab-rethinking](https://github.com/maarlab-rethinking).
 
 It exists for **one reason**: to build the [`citus`](citus) extension image,
 which cannot be contributed upstream. Citus is licensed under the AGPL-3.0,
-and the upstream README is explicit that licences outside the
+and the upstream README is explicit that licenses outside the
 [CNCF Allowlist](https://github.com/cncf/foundation/blob/main/policies-guidance/allowed-third-party-license-policy.md)
 are not a precedent for new extensions.
 
