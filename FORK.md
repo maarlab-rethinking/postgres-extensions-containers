@@ -35,7 +35,8 @@ reaching for a shared file:
 - **Per-extension build overrides.** `docker-bake.hcl` comes first in the bake
   file chain, so an extension's own `target "default"` block can *replace* any
   attribute, not just merge into maps. `citus/metadata.hcl` uses this to pin
-  `platforms` to `linux/amd64`, since Citus Data publishes no `arm64` packages.
+  `platforms` to `linux/amd64`, since Citus Data's `arm64` packages stop at
+  PostgreSQL 17 and this image is PostgreSQL 18.
 - **Dynamic target discovery.** `.github/workflows/bake.yml` derives the build
   matrix from `dagger call get-targets`, so a new extension directory needs no
   workflow registration.

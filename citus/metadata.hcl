@@ -48,9 +48,11 @@ target "default" {
     build = getBuildMatrix()
   }
 
-  // Citus Data publishes `amd64` packages only: there is no `arm64` component
-  // in their apt repository, so this image cannot be multi-arch. Replacing the
-  // list works because `docker-bake.hcl` comes first in the file chain.
+  // Citus Data's `arm64` component stops at PostgreSQL 17: as of 2026-10-16 it
+  // carries `postgresql-{15,16,17}-citus-13.4` and no `postgresql-18-citus-*`,
+  // on either bookworm or trixie. Drop this pin once that package appears —
+  // nothing else here is architecture-specific. Replacing the list works
+  // because `docker-bake.hcl` comes first in the file chain.
   platforms = [
     "linux/amd64"
   ]
