@@ -16,7 +16,7 @@
 #
 # Example:
 #   hack/compose-extension-catalog.sh trixie \
-#     ghcr.io/maarlab-rethinking/citus:14.2.0-202608211200-18-trixie@sha256:abc... \
+#     ghcr.io/maarlab-rethinking/citus:14.3.0-202608211200-18-trixie@sha256:abc... \
 #     > catalog-extensions-trixie.yaml
 set -euo pipefail
 

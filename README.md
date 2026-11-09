@@ -55,10 +55,9 @@ from a trusted, auditable repository
 > [!IMPORTANT]
 > **Citus is specific to this fork and is not proposed upstream.** It is
 > licensed under the AGPL-3.0, which is not on the CNCF Allowlist, and the note
-> above is explicit that non-Allowlisted licences are not a precedent. It is
+> above is explicit that non-Allowlisted licenses are not a precedent. It is
 > also the only extension here whose packages come from outside PGDG (the Citus
-> Data apt repository) and the only `amd64`-only image, since Citus Data's
-> `arm64` packages stop at PostgreSQL 17. See [`citus/README.md`](citus/README.md).
+> Data apt repository). See [`citus/README.md`](citus/README.md).
 > A `ClusterImageCatalog` carrying it alongside the upstream extensions is
 > published in [`catalogs/`](catalogs).
 

@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 -->
 
 [Citus](https://www.citusdata.com/) turns PostgreSQL into a distributed
-database. It transparently shards tables across nodes, parallelises queries,
+database. It transparently shards tables across nodes, parallelizes queries,
 and adds a columnar table access method (`citus_columnar`). For more
 information, see the [official documentation](https://docs.citusdata.com/).
 
@@ -21,13 +21,12 @@ affect how you consume the image:
 
 - **`shared_preload_libraries` is mandatory.** Citus refuses to work unless it
   is preloaded; `CREATE EXTENSION citus` fails otherwise.
-- **`amd64` only, for now.** Citus Data does publish `arm64` packages, but
-  only up to PostgreSQL 17 — `postgresql-{15,16,17}-citus-13.4` as of
-  2026-10-16, with no PostgreSQL 18 build on either distribution. This image is
-  PostgreSQL 18, so it is single-architecture and cannot run on `arm64` nodes.
-  Third parties fill the gap — Pigsty is one — but those packages sit outside
-  the chain of trust this image relies on: the Citus Data apt repository and
-  the key in [`citusdata-community.asc`](citusdata-community.asc).
+- **`amd64` and `arm64`, from Citus 14.3 onwards.** Citus Data publishes both
+  components for this series, so the image is a multi-architecture manifest
+  like the rest of the repository. It has not always been: the `arm64`
+  component carried no PostgreSQL 18 build before `postgresql-18-citus-14.3`,
+  so images tagged `14.2.0-18-*` and earlier are `amd64` only and will not pull
+  on an `arm64` node.
 - **Single-node Citus.** A CloudNativePG `Cluster` is one primary with
   replicas, not a coordinator plus workers. The image gives you
   [Citus on a single node](https://docs.citusdata.com/en/stable/get_started/single_node.html):
@@ -66,8 +65,8 @@ spec:
     extensions:
     - name: citus
       image:
-        # renovate: registryUrl=https://repos.citusdata.com/community/debian?suite=trixie&components=main&binaryArch=amd64 depName=postgresql-18-citus-14.2
-        reference: ghcr.io/cloudnative-pg/citus:14.2.0-18-trixie
+        # renovate: registryUrl=https://repos.citusdata.com/community/debian?suite=trixie&components=main&binaryArch=arm64 depName=postgresql-18-citus-14.3
+        reference: ghcr.io/cloudnative-pg/citus:14.3.0-18-trixie
       ld_library_path:
       - system
 ```
@@ -94,16 +93,16 @@ spec:
     name: cluster-citus
   extensions:
   - name: citus
-    version: '14.2-1'
+    version: '14.3-1'
   - name: citus_columnar
-    version: '14.2-1'
+    version: '14.3-1'
 ```
 
 > [!NOTE]
-> The version to declare here is the **SQL extension version** (`14.2-1`), not
-> the upstream release number (`14.2.0`) reported by `citus_version()` and used
+> The version to declare here is the **SQL extension version** (`14.3-1`), not
+> the upstream release number (`14.3.0`) reported by `citus_version()` and used
 > in the image tag. The two never match for Citus: the package
-> `14.2.0.citus-1` installs SQL scripts numbered `14.2-1`. The image carries it
+> `14.3.0.citus-1` installs SQL scripts numbered `14.3-1`. The image carries it
 > in the `io.cloudnativepg.image.sql.version` label, which is what the
 > end-to-end tests read.
 
@@ -142,7 +141,7 @@ Make sure there are no missing shared libraries.
 
 ## Maintenance notes
 
-Two things do not work the way they do for the PGDG-based extensions in this
+Three things do not work the way they do for the PGDG-based extensions in this
 repository, and need attention when bumping versions:
 
 - **The package does not come from PGDG.** Citus is not part of the PostgreSQL
@@ -153,12 +152,24 @@ repository, and need attention when bumping versions:
   is pinned and auditable rather than fetched during the build. Renovate reads
   the `registryUrl=` hint in `metadata.hcl` to look versions up there.
 - **The Debian package name carries the Citus `major.minor`**
-  (`postgresql-18-citus-14.2`). Renovate can therefore only track patch
+  (`postgresql-18-citus-14.3`). Renovate can therefore only track patch
   releases within a series. Moving to a new series is a manual change to the
-  `CITUS_MAJOR` build argument and the `depName=` hints in `metadata.hcl`.
+  `CITUS_MAJOR` build argument and the `depName=` hints in `metadata.hcl`, and
+  it is the moment to re-check architecture coverage: Citus Data publishes
+  `arm64` for some series and not for others, and for PostgreSQL 18 it starts
+  at 14.3. List what a component actually carries with
+
+  ```sh
+  curl -sSL https://repos.citusdata.com/community/debian/dists/trixie/main/binary-arm64/Packages.gz |
+    gunzip | grep '^Package: postgresql-18-citus'
+  ```
+
+  The `registryUrl=` hints point Renovate at `binaryArch=arm64` precisely so
+  that a patch bump inside a series cannot outrun the narrower component and
+  break the `arm64` half of the build.
 - **The `sql` attribute cannot be automated.** For every other extension in
   this repository Renovate derives it from the package version with an
-  `extractVersion` regex. No regex turns `14.2.0.citus-1` into `14.2-1`, so
+  `extractVersion` regex. No regex turns `14.3.0.citus-1` into `14.3-1`, so
   both the `sql` attributes in `metadata.hcl` and the `version` fields of the
   `Database` example above are maintained by hand and carry no `# renovate:`
   hint. A stale value fails the end-to-end tests loudly rather than silently.
