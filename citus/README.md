@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 -->
 
 [Citus](https://www.citusdata.com/) turns PostgreSQL into a distributed
-database. It transparently shards tables across nodes, parallelises queries,
+database. It transparently shards tables across nodes, parallelizes queries,
 and adds a columnar table access method (`citus_columnar`). For more
 information, see the [official documentation](https://docs.citusdata.com/).
 

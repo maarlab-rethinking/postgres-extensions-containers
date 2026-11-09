@@ -7,7 +7,7 @@ name: Build, test and publish Citus
 # caller for the only extension the fork builds. See FORK.md.
 
 # Testing images are built for a pull request, not for every branch push: a
-# `-testing` tag is a review artefact, and building on push published one for
+# `-testing` tag is a review artifact, and building on push published one for
 # any throwaway branch. `pull_request` also builds `refs/pull/N/merge`, so what
 # gets tested is the merge result rather than the branch in isolation.
 #

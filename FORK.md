@@ -103,7 +103,7 @@ gh workflow disable -R "$REPO" update_os_libraries.yml
 #    fork's registry, so eight of the nine names it computes are packages that
 #    were never published here, and the retention action panics on the first
 #    name it cannot find — "Failed to fetch packages: missing field `id`",
-#    GitHub's 404 body deserialised as a package — instead of skipping it, so
+#    GitHub's 404 body deserialized as a package — instead of skipping it, so
 #    it never reaches citus-testing. `registry-clean-citus.yml` does the same
 #    job for the one image this fork publishes.
 gh workflow disable -R "$REPO" registry-clean.yml
