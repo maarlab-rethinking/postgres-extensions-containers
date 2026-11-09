@@ -20,21 +20,26 @@ metadata = {
   versions = {
     bookworm = {
       "18" = {
-        // renovate: registryUrl=https://repos.citusdata.com/community/debian?suite=bookworm&components=main&binaryArch=amd64 depName=postgresql-18-citus-14.2
-        package = "14.2.0.citus-1"
+        // The hint points Renovate at the `arm64` component on purpose. Citus
+        // Data publishes fewer builds there than for `amd64`, so a version that
+        // exists on `arm64` exists on both, and no bump can leave this
+        // multi-architecture build with half a manifest.
+        // renovate: registryUrl=https://repos.citusdata.com/community/debian?suite=bookworm&components=main&binaryArch=arm64 depName=postgresql-18-citus-14.3
+        package = "14.3.0.citus-1"
         // The SQL version is not derivable from the package version: the
-        // `14.2.0.citus-1` package installs SQL scripts numbered `14.2-1`.
+        // `14.3.0.citus-1` package installs SQL scripts numbered `14.3-1`.
         // Renovate cannot maintain this line; bump it by hand alongside
         // `package` above. A stale value fails the E2E tests loudly.
-        sql     = "14.2-1"
+        sql     = "14.3-1"
       }
     }
     trixie = {
       "18" = {
-        // renovate: registryUrl=https://repos.citusdata.com/community/debian?suite=trixie&components=main&binaryArch=amd64 depName=postgresql-18-citus-14.2
-        package = "14.2.0.citus-1"
+        // See the note on the bookworm `binaryArch` above.
+        // renovate: registryUrl=https://repos.citusdata.com/community/debian?suite=trixie&components=main&binaryArch=arm64 depName=postgresql-18-citus-14.3
+        package = "14.3.0.citus-1"
         // See the note on the bookworm `sql` attribute above.
-        sql     = "14.2-1"
+        sql     = "14.3-1"
       }
     }
   }
@@ -48,16 +53,17 @@ target "default" {
     build = getBuildMatrix()
   }
 
-  // Citus Data's `arm64` component stops at PostgreSQL 17: as of 2026-10-16 it
-  // carries `postgresql-{15,16,17}-citus-13.4` and no `postgresql-18-citus-*`,
-  // on either bookworm or trixie. Drop this pin once that package appears —
-  // nothing else here is architecture-specific. Replacing the list works
-  // because `docker-bake.hcl` comes first in the file chain.
-  platforms = [
-    "linux/amd64"
-  ]
-
+  // No `platforms` override: this image is built for every architecture
+  // `docker-bake.hcl` declares. Citus Data's `arm64` component carries
+  // `postgresql-18-citus-14.3`, so nothing here is architecture-specific any
+  // more. Going back to a series without an `arm64` build for PostgreSQL 18
+  // — anything before 14.3 — means restoring `platforms = [ "linux/amd64" ]`
+  // here, which replaces the list rather than merging into it because
+  // `docker-bake.hcl` comes first in the file chain.
+  //
+  // `CITUS_MAJOR` is the Debian package's major.minor, which is part of its
+  // name (`postgresql-18-citus-14.3`); keep it in step with `package` above.
   args = {
-    CITUS_MAJOR = "14.2"
+    CITUS_MAJOR = "14.3"
   }
 }

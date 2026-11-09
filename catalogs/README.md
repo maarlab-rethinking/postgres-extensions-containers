@@ -56,12 +56,6 @@ restart in yours. Pinning `imageName` and the extension images by digest in your
 own manifests is the alternative, and it turns the same upgrade into a pull
 request you merge when it suits you.
 
-**Citus is `amd64` only.** Citus Data's `arm64` packages stop at PostgreSQL 17,
-and this catalog's Citus entry is PostgreSQL 18, so that one image is
-single-architecture while the PostgreSQL and upstream extension images beside it
-are not. On an `arm64` node the cluster starts and the extension image fails to
-pull. See [`../citus/README.md`](../citus/README.md).
-
 **Citus is AGPL-3.0.** That is why it is not proposed upstream, and it is worth
 knowing before it reaches your cluster.
 

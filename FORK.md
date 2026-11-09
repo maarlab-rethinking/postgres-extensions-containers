@@ -34,9 +34,10 @@ reaching for a shared file:
 
 - **Per-extension build overrides.** `docker-bake.hcl` comes first in the bake
   file chain, so an extension's own `target "default"` block can *replace* any
-  attribute, not just merge into maps. `citus/metadata.hcl` uses this to pin
-  `platforms` to `linux/amd64`, since Citus Data's `arm64` packages stop at
-  PostgreSQL 17 and this image is PostgreSQL 18.
+  attribute, not just merge into maps. `citus/metadata.hcl` used this to pin
+  `platforms` to `linux/amd64` while Citus Data shipped no `arm64` package for
+  PostgreSQL 18. Citus 14.3 ships one, so the pin is gone; the hook is how it
+  would come back if a future series dropped the component again.
 - **Dynamic target discovery.** `.github/workflows/bake.yml` derives the build
   matrix from `dagger call get-targets`, so a new extension directory needs no
   workflow registration.
@@ -94,7 +95,7 @@ gh workflow disable -R "$REPO" bake.yml
 gh workflow disable -R "$REPO" update-catalogs.yml
 #    update_os_libraries.yml opens a daily PR for extensions with
 #    auto_update_os_libs = true. Citus is not one of them: its package name
-#    carries the Citus major.minor (postgresql-18-citus-14.2) and lives outside
+#    carries the Citus major.minor (postgresql-18-citus-14.3) and lives outside
 #    PGDG, which the maintenance tooling cannot express.
 gh workflow disable -R "$REPO" update_os_libraries.yml
 #    registry-clean.yml deletes the `<ext>-testing` images older than a week,
@@ -182,7 +183,7 @@ Two fork-owned scripts do the work, and both are usable by hand:
 ```sh
 # Resolve the published image for a distribution, pinned by digest.
 hack/resolve-citus-image.sh trixie
-# ghcr.io/maarlab-rethinking/citus:14.2.0-18-trixie@sha256:7de5b522...
+# ghcr.io/maarlab-rethinking/citus:14.3.0-18-trixie@sha256:7de5b522...
 
 # Append it to upstream's catalog.
 hack/compose-extension-catalog.sh trixie "$(hack/resolve-citus-image.sh trixie)"
