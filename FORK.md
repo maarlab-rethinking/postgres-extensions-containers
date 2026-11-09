@@ -205,23 +205,95 @@ Signing bundles are regenerated on every run even when the catalog is
 byte-identical, so the decision to publish looks at the YAML alone — plus the
 case of a bundle that does not exist yet.
 
-## Syncing with upstream
+## Release flow
+
+A release here is not a tag: it is a digest. This fork publishes one image,
+`ghcr.io/maarlab-rethinking/citus`, and two signed catalogs that point at it, so
+cutting a release means landing a change on `main`, letting the build promote
+the image to its production tag, and letting the catalogs follow.
+
+`main` is protected by a ruleset that requires a pull request. The `admin`
+repository role bypasses it, which is why a direct push reports `Bypassed rule
+violations` rather than being rejected — but everything below goes through a
+pull request, including the sync.
+
+> [!IMPORTANT]
+> **Merge. Do not squash, do not rebase.** All three methods are enabled in the
+> repository and only one of them is safe for a sync: a squash collapses
+> upstream's commits into a new one, a rebase replays them under new hashes.
+> Either way `upstream/main` stops being an ancestor of `main`, the next sync
+> re-applies the same patches as conflicts, and `git log upstream/main..main`
+> stops describing what this fork owns.
+
+### Syncing with upstream
 
 ```sh
 git remote add upstream https://github.com/cloudnative-pg/postgres-extensions-containers.git
 git fetch upstream
-git checkout main && git merge upstream/main
+
+# Trial-merge in a throwaway branch first: a conflict found here costs nothing.
+git switch -c trial-merge main
+git merge --no-commit --no-ff upstream/main
+git merge --abort && git switch main && git branch -D trial-merge
+
+git switch -c chore/sync-upstream main
+git merge --no-ff -m "Merge upstream/main" upstream/main
+gh pr create --fill   # then merge it with "Create a merge commit"
 ```
 
 `main` carries this fork's own commits on top of upstream's, so the sync is an
-ordinary merge. Those merge commits are the only merges in `main`: pull requests
-are restricted to squash and rebase.
+ordinary merge; the design rule above is what keeps it conflict-free. Most syncs
+are Renovate digest bumps to shared files and never touch `citus/`, so they
+build nothing and promote nothing. One that does touch `citus/` builds on the
+pull request like any other change — which is what the trial merge is for: find
+out before `main` does.
 
 The fork's own diff, at any point:
 
 ```sh
 git log --oneline upstream/main..main
 ```
+
+### Changing what the fork owns
+
+Branch from `main`, keep the commits atomic, and open a pull request. What the
+review build does and what the merge does are deliberately different:
+
+| | pull request | merge to `main` |
+| --- | --- | --- |
+| Builds `citus-testing:<version>-<pg>-<distro>` | yes | yes |
+| Security scan and smoke tests against three CloudNativePG releases | yes | yes |
+| Promotes to `ghcr.io/maarlab-rethinking/citus` | no | yes |
+
+`copytoproduction` in `bake_targets.yml` needs the three test jobs and gates on
+`github.ref == 'refs/heads/main'`, so a review proves a real multi-architecture
+image without moving the production tag, and a merge moves it only behind green
+tests. Note that the gate reads the ref and not the event: a
+`workflow_dispatch` launched from `main` promotes just as a merge does. Dispatch
+from a branch to rebuild without publishing.
+
+`publish-catalogs.yml` then fires on the successful build, recomposes both
+catalogs around the new digest, signs them, and opens a pull request of its own.
+Merging that one is the last step of the release. Consumers that pin digests —
+as the catalog README recommends — move when it suits them, not when this
+repository moves.
+
+#### Bumping the Citus version
+
+Three fields in `citus/metadata.hcl` move together and only the first is
+automated: `package` (Renovate), `sql` and the `CITUS_MAJOR` build argument (by
+hand, because the Debian package name carries the Citus `major.minor`). A new
+series is also the moment to re-check which architectures Citus Data publishes
+for PostgreSQL 18; `citus/README.md` carries the detail and the `curl` that
+answers it.
+
+#### Changes that build nothing, and one that always does
+
+`citus.yml` subtracts `!citus/**.md` from its path filter, so prose about the
+extension does not rebuild it. A workflow cannot exclude itself from its own
+filter, however: editing `.github/workflows/citus.yml` always triggers the full
+matrix, comment-only changes included. Let those edits ride along with a change
+that builds anyway.
 
 ## Known upstream friction
 
