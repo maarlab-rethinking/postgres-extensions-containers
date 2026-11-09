@@ -39,7 +39,7 @@ spec:
     - name: postgis
       image:
         # renovate: suite=trixie-pgdg depName=postgresql-18-postgis-3
-        reference: ghcr.io/cloudnative-pg/postgis-extension:3.6.4-18-trixie
+        reference: ghcr.io/cloudnative-pg/postgis-extension:3.7.0-18-trixie
       ld_library_path:
       - system
       env:
@@ -50,7 +50,7 @@ spec:
     - name: pgrouting
       image:
         # renovate: suite=trixie-pgdg depName=postgresql-18-pgrouting
-        reference: ghcr.io/cloudnative-pg/pgrouting:4.0.1-18-trixie
+        reference: ghcr.io/cloudnative-pg/pgrouting:4.0.2-18-trixie
 ```
 
 ### 2. Enable the extension in a database
@@ -71,10 +71,10 @@ spec:
   extensions:
   - name: postgis
     # renovate: suite=trixie-pgdg depName=postgresql-18-postgis-3 extractVersion=^(?<version>\d+\.\d+\.\d+)
-    version: '3.6.4'
+    version: '3.7.0'
   - name: pgrouting
     # renovate: suite=trixie-pgdg depName=postgresql-18-pgrouting extractVersion=^(?<version>\d+\.\d+\.\d+)
-    version: '4.0.1'
+    version: '4.0.2'
 ```
 
 ### 3. Verify installation
