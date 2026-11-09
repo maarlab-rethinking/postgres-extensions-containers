@@ -25,7 +25,7 @@ spec:
       extensions:
         - name: citus
           image:
-            reference: ghcr.io/maarlab-rethinking/citus:14.2.0-18-trixie@sha256:18b7695a2173ff59a4edb7cd12226aace23cbd4911789946cba937eadc2538c0
+            reference: ghcr.io/maarlab-rethinking/citus:14.3.0-18-trixie@sha256:12d355bf2dcab16b49185a478034272965c9c1dcec81070d8aa16d28975ee83f
           ld_library_path:
             - system
         - name: pg-crash
